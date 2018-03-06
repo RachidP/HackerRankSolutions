@@ -1,8 +1,11 @@
 package main
 
+
+
 import (
 	"fmt"
 	"math"
+    "os"
 )
 
 type graph []*node
@@ -13,16 +16,7 @@ func main() {
 
 }
 
-/*
-book introduction to algorithms page 595
-Given a graph G D .V; E/ and a distinguished source vertex s, breadth-ﬁrst
-search systematically explores the edges of G to “discover” every vertex that is
-reachable from s. It computes the distance (smallest number of edges) from s
-to each reachable vertex. It also produces a “breadth-ﬁrst tree” with root s that
-contains all reachable vertices. For any vertex v reachable from s, the simple path
-in the breadth-ﬁrst tree from s to v corresponds to a “shortest path” from s to v
-in G, that is, a path containing the smallest number of edges. The algorithm works
-on both directed and undirected graphs.*/
+
 
 func (g graph) bfs(s int64) {
 	sorgent := g[s-1]
@@ -95,3 +89,112 @@ func (g graph) printDistance(s int64) {
 	fmt.Printf("\n")
 
 }
+
+
+
+
+
+
+//false= directed graph, true = undirected graph
+var undirected = false
+
+type node struct {
+	id       int64 //
+	next     *node //
+	color    rune  //color  of the node
+	father   *node
+	distance int64 // distance from the source to vertex u
+}
+
+// return new node (initialized to nil)
+func getNode(v int64) *node {
+
+	return &node{
+		id: v,
+	}
+}
+
+// return new node pointing to n
+func setNeighbor(verNumber int64, n *node) *node {
+
+	return &node{
+		id:       verNumber,
+		distance: 6,
+		next:     n,
+	}
+
+}
+
+// printGraph all the graph
+func (g graph) printGraph() {
+	for i, v := range g {
+		fmt.Printf("%d (%v)", i+1, v.distance)
+		//fmt.Printf("%d", i)
+		v.next.printNeighbors()
+
+	}
+}
+
+//printNeighbors all the neighbor of the current Node
+func (n *node) printNeighbors() {
+	tmp := n
+	for tmp != nil {
+		fmt.Printf("---->%d(%v)", tmp.id, tmp.distance)
+		tmp = tmp.next
+	}
+	fmt.Println()
+
+}
+
+func check(e error) {
+	if e != nil {
+		panic(e)
+	}
+}
+
+// build the graph
+func getGraph() {
+	var g graph
+	var q int
+	var n, m int
+	var v1, v2, idOrigin int64
+
+	f := os.Stdin
+	
+
+    _, err := fmt.Fscanf(f, "%d\n", &q)
+	check(err)
+
+	for i := 0; i < q; i++ {
+		_, err = fmt.Fscanf(f, "%d %d\n", &n, &m)
+		check(err)
+		lenG := n
+		g = make(graph, lenG)
+
+		//make n nodes
+		for j := 0; j < n; j++ {
+			id := int64(j + 1) //id start from 1
+			g[j] = getNode(id)
+		}
+		//make  m paths
+		for j := 0; j < m; j++ {
+			_, err = fmt.Fscanf(f, "%d %d\n", &v1, &v2)
+			check(err)
+			g[v1-1].next = setNeighbor(v2, g[v1-1].next)
+			g[v2-1].next = setNeighbor(v1, g[v2-1].next)
+		}
+
+		_, err = fmt.Fscanf(f, "%d\n", &idOrigin)
+		check(err)
+		// fmt.Println("\n original graph")
+		// g.printGraph()
+		g.bfs(idOrigin)
+		// fmt.Println("\n new graph")
+		// g.printGraph()
+		// fmt.Println("\nshortest path")
+		g.printDistance(idOrigin)
+
+	}
+
+}
+
